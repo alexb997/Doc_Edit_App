@@ -1,12 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import socket from '../services/socket';
+import { useParams } from 'react-router-dom';
+import api from '../services/api';
 
-function Editor({ documentId }) {
+function Editor() {
+  const { documentId } = useParams();
   const [content, setContent] = useState('');
 
   useEffect(() => {
     // Join the document room
     socket.emit('joinDocument', documentId);
+
+    // Load the document content from the server
+    api.get(`/documents/${documentId}`).then((res) => {
+      setContent(res.data.content);
+    });
 
     // Listen for document updates
     socket.on('documentUpdate', (newContent) => {
@@ -24,7 +32,11 @@ function Editor({ documentId }) {
   };
 
   return (
-    <textarea value={content} onChange={handleChange}></textarea>
+    <textarea
+      value={content}
+      onChange={handleChange}
+      style={{ width: '100%', height: '90vh' }}
+    ></textarea>
   );
 }
 
